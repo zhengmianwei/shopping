@@ -17,6 +17,7 @@ public class LoginController {
 	 * @param user
 	 * @return
 	 */
+
 	@RequestMapping(value="/login", produces = {"application/json;charset=UTF-8"},
 			method = RequestMethod.POST)
 	public String login(User user, ModelMap model){
