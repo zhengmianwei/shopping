@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mapper.RightLimitMapper">
+	<resultMap id="roleMenuMap" type="com.model.RoleMenu">
+		<result column="role_id" property="roleId" jdbcType="VARCHAR" />
+		<result column="id" property="menuId" jdbcType="VARCHAR" />
+		<result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="userRoleMap" type="com.model.UserRole">
+		<result column="id" property="roleId" jdbcType="VARCHAR" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="user_id" property="userId" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="queryMap" type="java.util.Map">
+		<result column="total" property="total" jdbcType="INTEGER" />
+	</resultMap>
+	<resultMap id="menuMap" type="com.model.Menu">
+		<result column="id" property="id" jdbcType="VARCHAR" />
+		<result column="pid" property="pid" jdbcType="VARCHAR" />
+		<result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+		<result column="url" property="url" jdbcType="VARCHAR" />
+	</resultMap>
+	<!-- 根据用户名获取菜单模块 -->
+	<select id="getMenuByUser" parameterType="com.model.User" resultMap="menuMap">
+		select 
+			id,
+			pid,
+			menu_name,
+			url
+		from t_menu
+	</select>
+	<!-- 获取用户角色权限 -->
+	<select id="getUserRole" parameterType="com.model.UserRole"
+		resultMap="userRoleMap">
+		<!-- SELECT 
+		t1.id, 
+		t1.role_name, 
+		f.user_id 
+		FROM t_role t1
+		LEFT JOIN (
+		SELECT t2.role_id, t2.user_id 
+		FROM t_user_role t2,
+		t_user t3 
+		WHERE t2.user_id= t3.id 
+		AND t3.username= #{username}) f
+		ON t1.id = f.ROLE_ID -->
+		SELECT 
+			t1.id, 
+			t1.role_name, 
+			t2.user_id 
+		FROM 
+			t_role t1 LEFT JOIN 
+		   	t_user_role t2
+			on t1.id = t2.role_id
+			and t2.user_id = #{userId}
+	</select> 
+	<!-- 删除用户角色权限 -->
+	<delete id="deleteUserRole" parameterType="com.model.User">
+		delete from t_user_role
+		where user_id = #{userId}
+	</delete>
+	<!-- 绑定用户角色权限 -->
+	<insert id="bindingUserRole" parameterType="com.model.UserRole">
+		insert into 
+		t_user_role(user_id, role_id)
+		values(#{userId}, #{roleId})
+	</insert>
+	<!-- 获取角色权限模块 -->
+	<select id="getRoleMenu"  parameterType="com.model.RoleMenu"
+		resultMap="roleMenuMap">
+		select t4.id, t4.menu_name, f.role_id 
+		from t_menu t4 left join
+		(select t1.id, t1.menu_name, t2.role_id
+		from t_menu t1 
+		left join t_role_menu t2
+		on t1.id = t2.menu_id
+		left join t_role t3
+		on t2.role_id = t3.id
+		where t2.role_id=#{roleId}) f
+		on t4.id=f.id
+		<where>
+			<if test="menuId == null or menuId == ''">
+				and t4.pid = 0
+			</if>
+			<if test="menuId != null and menuId !=''">
+				and t4.pid = #{menuId}
+			</if>
+		</where>
+	</select>
+	<!-- 绑定角色模块 -->
+	<insert id="bindingMenu" parameterType="com.model.RoleMenu">
+		insert into t_role_menu(role_id,menu_id)
+		values(#{roleId}, #{menuId})
+	</insert>
+	<!-- 判断角色模块是否存在 -->
+	<select id="findRoleMenuTotal" parameterType="com.model.RoleMenu"
+		resultMap="queryMap">
+		select count(1) total from t_role_menu
+		where role_id = #{roleId, jdbcType = VARCHAR}
+		and menu_id = #{menuId, jdbcType = VARCHAR}
+	</select>
+	<delete id="deleteRoleMeun" parameterType="java.lang.String">
+		delete from t_role_menu
+		where role_id = #{roleId}
+	</delete>
+</mapper>

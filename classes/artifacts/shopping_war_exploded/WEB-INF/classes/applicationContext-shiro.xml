@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd   
+    http://www.springframework.org/schema/util 
+    http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+	<description>Shiro 配置</description>
+	<!-- 項目自定义的Realm -->
+	<bean id="shiroDbRealm" class="com.captcha.ShiroDbRealm">
+	</bean>
+	<bean id="captchaFormAuthenticationFilter" class="com.captcha.CaptchaFormAuthenticationFilter"/>
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager" />
+		<property name="loginUrl" value="/login" />
+		<property name="successUrl" value="/views/index.jsp" />
+		<property name="unauthorizedUrl" value="/login" />
+		<property name="filters">
+            <map>
+                <!-- 启用验证码检验 -->
+                <entry key="authc" value-ref="captchaFormAuthenticationFilter"/>
+            </map>
+        </property>
+		<property name="filterChainDefinitions">
+			<value>
+				/login.jsp = anon
+				/* = authc
+				/logout = logout
+				/index.jsp*= anon
+				/error/noperms.jsp*= anon
+			    /jsp/.jsp* = authc
+			    /html/*.html = authc
+			</value>
+			<!--  <value>  
+               	/jsp/login.jsp* = anon
+				/login.do* = logout
+                /*.do = anon   
+                /logout = logout  
+                /role/** = roles[admin]  
+                /permission/** = perms[permssion:look]  
+                /** = authc  
+            </value>   -->
+            <!--  <value>  
+                /jsp/login.jsp* = anon
+				/login.do* = logout
+				/user/toLogin = authc authc 表示需要认证才能访问的页面  
+                /home = authc, perms[/home]  perms 表示需要该权限才能访问的页面 
+                /jsp/*.jsp = authc
+                /user/*.do = anon
+                ../*.do = anon   
+                /login.do* = logout  
+                /role/** = roles[admin]  
+                /permission/** = perms[permssion:look]  
+                
+            </value>   -->
+		</property>
+	</bean>
+
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<!--设置自定义realm -->
+		<property name="realm" ref="shiroDbRealm" />
+	<!-- 	<property name="cacheManager" ref="cacheManager" /> -->
+	</bean>
+
+	<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+
+	<!--自定义Realm 继承自AuthorizingRealm -->
+	<bean id="monitorRealm" class="com.service.MonitorRealm"></bean>
+	<!-- securityManager -->
+	<bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod"
+			value="org.apache.shiro.SecurityUtils.setSecurityManager" />
+		<property name="arguments" ref="securityManager" />
+	</bean>
+
+	<!-- Enable Shiro Annotations for Spring-configured beans. Only run after -->
+	<!-- the lifecycleBeanProcessor has run: -->
+	<bean
+		class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+		depends-on="lifecycleBeanPostProcessor" />
+	<bean
+		class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager" />
+
+	</bean>
+	<!-- 用户授权信息Cache -->
+	<bean id="cacheManager" class="org.apache.shiro.cache.MemoryConstrainedCacheManager" />
+	
+</beans>

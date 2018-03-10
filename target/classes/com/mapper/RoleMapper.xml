@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mapper.RoleMapper">
+	<resultMap id="roleMap" type="com.model.Role">
+		<result column="id" property="id" jdbcType="VARCHAR" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="description" property="description" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="VARCHAR" />
+		<result column="enbale" property="enbale" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="queryMap" type="java.util.Map">
+		<result column="total" property="total" jdbcType="INTEGER" />
+	</resultMap>
+	
+	<!-- 添加角色信息 -->
+	<insert id="addRole" parameterType="com.model.Role">
+		insert into t_role(
+			id,
+			role_name,
+			description,
+			create_time,
+			enbale)
+		values(
+			#{id, jdbcType = VARCHAR},
+			#{roleName, jdbcType = VARCHAR},
+			#{description, jdbcType = VARCHAR},
+			SYSDATE('yyyy-mm-dd hh24:mi:ss'),
+			#{enbale, jdbcType = INTEGER}
+		)
+	</insert>
+	
+	<!-- 删除角色信息 -->
+	<delete id="removeRole" parameterType="java.util.Map">
+		delete from
+		t_role 
+		where id in
+		<foreach item="item" index="index" collection="list"
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	<!-- 修改角色信息状态 -->
+	<!-- <update id="updateRoleStatus" parameterType="com.model.Role">
+		update t_role 
+		<set>
+			enbale = #{enbale}
+		</set>
+		where id in
+		<foreach item="item" index="index" collection="list"
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update> -->
+	<!-- 启用角色权限 -->
+	<update id="enbaleRole" parameterType="java.util.Map">
+		update t_role
+		set enbale = 1
+		where id in
+		<foreach item="item" index="index" collection="list"
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	<!-- 禁用角色权限 -->
+	<update id="disableRole" parameterType="java.util.Map">
+		update t_role
+		set enbale = 0
+		where id in
+		<foreach item="item" index="index" collection="list"
+			open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	<!-- 修改角色信息 -->
+	<update id="updateRole" parameterType="com.model.Role">
+		update t_role
+		<set>
+			role_name = #{roleName},
+			description = #{description}
+		</set>
+		where id = #{id}
+	</update>
+	<!-- 查询角色信息条数 -->
+	<select id="findRoleTotal" parameterType="com.vo.RoleVO"
+		resultMap="queryMap">
+		select count(1) total
+		from t_role where 1=1
+		<if test="roleName != null and roleName !=''">
+			and role_name like CONCAT(CONCAT('%'), 
+			#{roleName, jdbcType = VARCHAR},'%')
+		</if>
+	</select>
+	<!-- 查询角色信息 -->
+	<select id="findRole" parameterType="com.vo.RoleVO"
+		resultMap="roleMap">
+		select 
+			id,
+			role_name,
+			description,
+			create_time,
+			(case
+			when enbale = 1 then '可用'
+			when enbale = 0 then '不可用'
+			end) enbale
+		from t_role where 1=1
+		<if test="roleName != null and roleName !=''">
+			and role_name like CONCAT(CONCAT('%'), 
+			#{roleName, jdbcType = VARCHAR},'%')
+		</if>
+		limit #{startPage}, #{endPage}
+	</select>
+</mapper>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mapper.OrderMapper">
+	<resultMap id="queryCountMap" type="java.util.Map">
+		<result column="total" property="total" jdbcType="INTEGER"/>
+	</resultMap>
+	<resultMap id="queryMap" type="com.model.Order">
+		<result column="id" property="id" />
+		<result column="order_no" property="orderNo" />
+		<result column="goods_no" property="goodsNo" />
+		<result column="goods_price" property="goodsPrice" />
+		<result column="goods_number" property="goodsNumber" />
+	</resultMap>
+	
+	<!-- 保存订单信息 -->
+	<insert id="saveOrder" parameterType="com.model.Order">
+		insert into t_order(
+					id, 
+					order_no, 
+					goods_no, 
+					goods_price, 
+					goods_number
+		)values(
+					#{id, jdbcType = VARCHAR},
+					#{orderNo, jdbcType = VARCHAR},
+					#{goodsNo, jdbcType = VARCHAR},
+					#{goodsPrice, jdbcType = VARCHAR},
+					#{goodsNumber, jdbcType = INTEGER}
+		) 
+	</insert>
+	
+	<!-- 删除订单 -->
+	<delete id="deleteOrder" parameterType="java.lang.String">
+		delete from t_order
+		where id in
+		<foreach item="item" index="index" collection="list"
+			open="(" separator="," close=")">
+			#{item}	
+		</foreach>
+		
+	</delete> 
+	
+	<!-- 修改订单 -->
+	<update id="modifyOrder" parameterType="com.model.Order">
+		update t_order
+			<set>
+				order_no = #{orderNo, jdbcType = VARCHAR},
+				goods_no = #{goodsNo, jdbcType = VARCHAR},
+				goods_price = #{goodsPrice, jdbcType = FLOAT},
+				goods_number = #{goodsNumber, jdbcType = INTEGER}
+			</set>
+		where id = #{id}
+	</update>
+	<sql id="selectOrder">
+		
+		<where>
+			<if test="orderNo != null and orderNo != ''">
+				and order_no like CONCAT(CONCAT('%', #{orderNo, jdbcType = VARCHAR}), '%')
+			</if>
+			<if test="goodsNo != null and goodsNo != ''">
+				and goods_no like CONCAT(CONCAT('%', #{goodsNo, jdbcType = VARCHAR}), '%')
+			</if>
+		</where>
+	</sql>
+	<!-- 查询订单信息 -->
+	<select id="queryOrderList" parameterType="com.vo.OrderVO" 
+		resultMap="queryMap">
+		select 
+			id,
+			order_no,
+			goods_no,
+			goods_price,
+			goods_number
+		from t_order
+		<include refid="selectOrder" />
+		LIMIT #{startPage}, #{endPage}
+	</select>
+	
+	<!-- 查询订单数量 -->
+	<select id="queryCountOrder" parameterType="com.vo.OrderVO" 
+		resultMap="queryCountMap">
+		select count(1) total from t_order
+			
+		<include refid="selectOrder" />
+	</select>
+	
+</mapper>

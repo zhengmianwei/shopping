@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/context 
+    http://www.springframework.org/schema/context/spring-context-3.0.xsd" default-autowire="byName">
+ <!--    <bean id="dataSource" destroy-method="close" class="org.apache.commons.dbcp.BasicDataSource">
+    	<property name="driverClassName" value="${jdbc.driverClassName}"></property>
+    	<property name="url" value="${jdbc.url}"/>
+    	<property name="username" value="${jdbc.username}"></property>
+    	<property name="password" value="${jdbc.password}"></property>
+    </bean> -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+    	<property name="driverClass" value="${jdbc.driverClassName}"></property>
+    	<property name="jdbcUrl" value="${jdbc.url}"/>
+    	<property name="user" value="${jdbc.username}"></property>
+    	<property name="password" value="${jdbc.password}"></property>
+    	<!-- 当连接池中的连接耗尽的时候c3p0一次同时获取的连接数 -->
+    	<property name="acquireIncrement">
+    		<value>${c3p0.acquireIncrement}	</value>
+    	 </property>
+    	<!-- 初始化连接数,最大连接数与最小连接数之间取值 -->
+    	<property name="initialPoolSize">
+    		<value>${c3p0.initialPoolSize}</value>
+    	</property>
+    	<!-- 最小连接数 -->
+    	<property name="minPoolSize">
+    		<value>${c3p0.minPoolSize}</value>
+    	</property>
+    	<!-- 最大连接数 -->
+    	<property name="maxPoolSize">
+    		<value>${c3p0.maxPoolSize}</value>
+    	</property>
+    	<!-- 最大空闲时间，60秒内未使用则连接被丢弃 -->
+    	<property name="maxIdleTime">
+    		<value>${c3p0.maxIdleTime}</value>
+    	</property>
+    	<!-- 每60秒检查所有连接池中的连接数 -->
+    	<property name="idleConnectionTestPeriod">
+    		<value>${c3p0.idleConnectionTestPeriod}</value>
+    	</property>
+    	<!-- 最大缓存数 -->
+    	<property name="maxStatements">
+    		<value>${c3p0.maxStatements}</value>
+    	</property>
+    	<!-- c3p0异步操作，多线程实现多个操作同时被执行 -->
+    	<property name="numHelperThreads">
+    		<value>${c3p0.numHelperThreads}</value>
+    	</property>
+    	<property name="preferredTestQuery"><value>SELECT 1</value></property>
+    </bean>
+</beans>

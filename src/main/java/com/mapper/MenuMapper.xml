@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mapper.MenuMapper">
+	<resultMap id="menuMap" type="com.model.Menu">
+		<result column="id" property="id" jdbcType="VARCHAR" />
+		<result column="pid" property="pid" jdbcType="VARCHAR" />
+		<result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+		<result column="order_no" property="orderNo" jdbcType="INTEGER" />
+		<result column="menu_type" property="menuType" jdbcType="INTEGER" />
+		<result column="url" property="url" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="VARCHAR" />
+		<result column="update_time" property="updateTime" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="queryMap" type="java.util.Map">
+		<result column="total" property="total" jdbcType="INTEGER" />
+	</resultMap>
+	<select id="findMenuTotalByPid" parameterType="java.lang.String" 
+		resultMap="queryMap">
+		select count(1) total
+		from t_menu
+		where pid = #{id}
+	</select>
+</mapper>
